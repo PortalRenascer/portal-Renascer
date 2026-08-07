@@ -1,7 +1,7 @@
 import os
 import streamlit as st 
 os.makedirs("minutas_salvas", exist_ok=True)
-opcao = st.sidebar.selectbox("Escolha a página", ["Consultar Minuta por NF", "Consultar por Carregamento", "Cadastrar Minutas"],)
+opcao = st.sidebar.selectbox("Escolha a página", ["Consultar por NF-e", "Consultar por Carregamento", "Cadastrar Minutas"],)
 if opcao == "Consultar Minuta por NF":
     st.title("Consultar por NF-e")
     nf = st.text_input("Digite o número da NF-e")
