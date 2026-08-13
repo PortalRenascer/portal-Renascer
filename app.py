@@ -61,7 +61,6 @@ elif opcao == "Consultar por Carregamento":
                 st.warning("Nenhuma minuta encontrada para este carregamento ._.")
         else:
             st.error("Digite o número do carregamento.")
-
 # --- CADASTRAR MINUTAS ---
 elif opcao == "Cadastrar Minutas":
     st.title("Cadastro de Novas Minutas")
@@ -74,14 +73,19 @@ elif opcao == "Cadastrar Minutas":
 
     if st.button("Salvar Minuta"):
         if carregamento and nf_cadastro and foto:
-            with st.spinner("Salving minuta na nuvem..."):
-                # 1. Envia foto para o ImgBB
-                payload = {"key": st.secrets["IMGBB_API_KEY"]}
+            with st.spinner("Salvando minuta na nuvem..."):
+                # 1. Envia foto para o ImgBB garantindo link direto permanente
+                payload = {
+                    "key": st.secrets["IMGBB_API_KEY"],
+                    "expiration": 0 # 0 significa sem expiração (permanente)
+                }
                 files = {"image": foto.getvalue()}
                 res = requests.post("https://api.imgbb.com/1/upload", data=payload, files=files)
 
                 if res.status_code == 200:
-                    url_foto = res.json()["data"]["url"]
+                    # Pega a URL direta do arquivo de imagem (display_url ou url)
+                    dados_resposta = res.json()["data"]
+                    url_foto = dados_resposta.get("display_url", dados_resposta.get("url"))
 
                     # 2. Salva registro no Supabase
                     dados = {
