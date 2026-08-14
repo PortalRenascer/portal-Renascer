@@ -39,7 +39,7 @@ if opcao == "Consultar por NF-e":
                         st.success("Minuta apagada com sucesso!")
                         st.rerun()
             else:
-                st.warning("Nenhuma minuta encontrada para esta NF-e ;-;.")
+                st.warning("Nenhuma minuta encontrada para esta NF-e ;-;")
         else:
             st.error("Digite o número da NF-e.")
 
@@ -95,7 +95,7 @@ elif opcao == "Cadastrar Minutas":
                     }
                     supabase.table("minutas").insert(dados).execute()
 
-                    st.success(f"Minuta salva com sucesso, fi! (NF: {nf_cadastro} | Carregamento: {carregamento})")
+                    st.success(f"Minuta salva com sucesso! (NF: {nf_cadastro} | Carregamento: {carregamento})")
                 else:
                     st.error("Erro ao subir a foto. Verifique a chave do ImgBB.")
         else:
