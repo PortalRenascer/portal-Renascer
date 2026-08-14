@@ -6,8 +6,11 @@ st.set_page_config(
     page_title="Portal Renascer",
     page_icon="logo.png",
     layout="wide"
-)
-st.sidebar.image("logo.png", use_container_width=True)
+    
+if os.path.exists("logo.png"):
+    st.sidebar.image("logo.png", use_container_width=True)
+else:
+    st.sidebar.title("Portal Renascer")
 
 # Conexão com Supabase
 url = st.secrets["SUPABASE_URL"]
