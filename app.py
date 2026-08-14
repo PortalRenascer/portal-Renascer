@@ -3,7 +3,7 @@ import requests
 from supabase import create_client, Client
 
 st.set_page_config(
-    page_tittle="Portal Renascer",
+    page_title="Portal Renascer",
     layout="wide"
 )
 # Conexão com Supabase
