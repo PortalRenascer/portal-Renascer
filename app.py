@@ -4,8 +4,11 @@ from supabase import create_client, Client
 
 st.set_page_config(
     page_title="Portal Renascer",
+    page_icon="logo.png",
     layout="wide"
 )
+st.sidebar.image("logo.png", use_container_width=True)
+
 # Conexão com Supabase
 url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
