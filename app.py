@@ -2,6 +2,10 @@ import streamlit as st
 import requests
 from supabase import create_client, Client
 
+st.set_page_config(
+    page_tittle="Portal Renascer",
+    layout="wide"
+)
 # Conexão com Supabase
 url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
