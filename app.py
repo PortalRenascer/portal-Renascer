@@ -77,39 +77,47 @@ elif opcao == "Consultar por Carregamento":
 # --- CADASTRAR MINUTAS ---
 elif opcao == "Cadastrar Minutas":
     st.title("Cadastro de Novas Minutas")
-    carregamento = st.text_input("Digite o número do Carregamento:") 
-    nf_cadastro = st.text_input("Digite o número da Nf-e:")
-    foto = st.file_uploader("Selecione a foto da minuta assinada:", type=["png", "jpg", "jpeg"])
 
-    if foto:
-        st.image(foto, caption="Prévia da minuta selecionada", width=300)
+    # 1. Criamos um Formulário com a regra de limpar os campos após o envio
+    with st.form(key="form_minuta", clear_on_submit=True):
+        carregamento = st.text_input("Digite o número do Carregamento:")
+        nf_cadastro = st.text_input("Digite o número da Nf-e:")
+        foto = st.file_uploader("Selecione a foto da minuta assinada:", type=["png", "jpg", "jpeg"])
+        
+        # Botão oficial de envio do formulário
+        botao_salvar = st.form_submit_button("Salvar Minuta")
 
-    if st.button("Salvar Minuta"):
+    # 2. Quando o botão for acionado:
+    if botao_salvar:
         if carregamento and nf_cadastro and foto:
-            with st.spinner("Salvando minuta na nuvem..."):
-                # 1. Envia foto para o ImgBB garantindo link direto permanente
-                payload = {
-                    "key": st.secrets["IMGBB_API_KEY"],
-                    "expiration": 0 # 0 significa sem expiração (permanente)
-                }
-                files = {"image": foto.getvalue()}
-                res = requests.post("https://api.imgbb.com/1/upload", data=payload, files=files)
+            nf_limpa = str(nf_cadastro).strip()
 
-                if res.status_code == 200:
-                    # Pega a URL direta do arquivo de imagem (display_url ou url)
-                    dados_resposta = res.json()["data"]
-                    url_foto = dados_resposta.get("display_url", dados_resposta.get("url"))
+            # Checa no Supabase se a NF-e já foi cadastrada antes
+            checa_existente = supabase.table("minutas").select("nf").eq("nf", nf_limpa).execute()
 
-                    # 2. Salva registro no Supabase
-                    dados = {
-                        "carregamento": str(carregamento).strip(),
-                        "nf": str(nf_cadastro).strip(),
-                        "url_foto": url_foto
+            if checa_existente.data:
+                st.error(f"⚠️ A NF-e **{nf_limpa}** já está cadastrada no sistema! Cadastro duplicado cancelado.")
+            else:
+                with st.spinner("Salvando minuta na nuvem..."):
+                    payload = {
+                        "key": st.secrets["IMGBB_API_KEY"],
+                        "expiration": 0
                     }
-                    supabase.table("minutas").insert(dados).execute()
+                    files = {"image": foto.getvalue()}
+                    res = requests.post("https://api.imgbb.com/1/upload", data=payload, files=files)
 
-                    st.success(f"Minuta salva com sucesso! (NF: {nf_cadastro} | Carregamento: {carregamento})")
-                else:
-                    st.error("Erro ao subir a foto. Verifique a chave do ImgBB.")
+                    if res.status_code == 200:
+                        dados_resposta = res.json()["data"]
+                        url_foto = dados_resposta.get("display_url", dados_resposta.get("url"))
+
+                        dados = {
+                            "carregamento": str(carregamento).strip(),
+                            "nf": nf_limpa,
+                            "foto_url": url_foto
+                        }
+                        supabase.table("minutas").insert(dados).execute()
+                        st.success("✅ Minuta cadastrada com sucesso! Os campos foram limpos para o próximo cadastro.")
+                    else:
+                        st.error("Erro ao enviar a imagem. Tente novamente.")
         else:
-            st.error("Preencha todos os campos e selecione uma imagem para salvar!")
+            st.warning("⚠️ Preencha todos os campos e selecione uma foto antes de salvar.")
