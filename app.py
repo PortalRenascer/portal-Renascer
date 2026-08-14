@@ -9,7 +9,9 @@ st.set_page_config(
     layout="wide"
 )
 if os.path.exists("logo.png"):
-    st.sidebar.image("logo.png", use_container_width=True)
+    col1, col2, col3 = st.sidebar.columns ([1,2,1])
+    with col2:
+        st.image("logo.png", use_container_width=True)
 else:
     st.sidebar.title("Portal Renascer")
 
