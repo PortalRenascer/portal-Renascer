@@ -6,7 +6,7 @@ st.set_page_config(
     page_title="Portal Renascer",
     page_icon="logo.png",
     layout="wide"
-    
+)
 if os.path.exists("logo.png"):
     st.sidebar.image("logo.png", use_container_width=True)
 else:
