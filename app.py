@@ -77,7 +77,7 @@ if opcao == "Consultar por NF-e":
                 st.rerun()
 
     elif "minutas_encontradas" in st.session_state and not st.session_state["minutas_encontradas"]:
-        st.warning("Nenhuma minuta encontrada para esta NF-e ;-;")
+        st.warning("Nenhuma minuta encontrada para esta NF-e!")
 
 # --- CONSULTAR POR CARREGAMENTO ---
 elif opcao == "Consultar por Carregamento":
@@ -96,7 +96,7 @@ elif opcao == "Consultar por Carregamento":
                     url_foto = item.get("foto_url") or item.get("url_foto")
                     st.image(url_foto, caption=f"NF-e: {item['nf']} | Carregamento: {item['carregamento']}")
             else:
-                st.warning("Nenhuma minuta encontrada para este carregamento ._.")
+                st.warning("Nenhuma minuta encontrada para este carregamento!")
         else:
             st.error("Digite o número do carregamento.")
 
