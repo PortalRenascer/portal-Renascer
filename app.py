@@ -138,8 +138,11 @@ elif opcao == "Cadastrar Minutas":
                             "nf": nf_limpa,
                             "url_foto": url_foto
                         }
+                    try:
                         supabase.table("minutas").insert(dados).execute()
                         st.success("✅ Minuta cadastrada com sucesso! Os campos foram limpos para o próximo cadastro.")
+                    except Exception as e:
+                        st.error(f"Erro do Supabase: {e}")
                     else:
                         st.error("Erro ao enviar a imagem. Tente novamente.")
         else:
