@@ -8,8 +8,9 @@ st.set_page_config(
     page_icon="logo.png",
     layout="wide"
 )
+
 if os.path.exists("logo.png"):
-    col1, col2, col3 = st.sidebar.columns ([1,2,1])
+    col1, col2, col3 = st.sidebar.columns([1, 2, 1])
     with col2:
         st.image("logo.png", use_container_width=True)
 else:
@@ -26,47 +27,52 @@ opcao = st.sidebar.selectbox("Escolha a página", ["Consultar por NF-e", "Consul
 if opcao == "Consultar por NF-e":
     st.title("Consultar por NF-e")
     nf = st.text_input("Digite o número da NF-e")
+    
     if st.button("Buscar Minuta"): 
         if nf: 
             with st.spinner("Buscando..."):
                 resposta = supabase.table("minutas").select("*").eq("nf", str(nf).strip()).execute()
                 st.session_state["minutas_encontradas"] = resposta.data
-
-if "minutas_encontradas" in st.session_state and st.session_state["minutas_encontradas"]:
-    minutas = st.session_state["minutas_encontradas"]
-    for item in minutas:
-        st.image(item.get("foto_url") or item.get("url_foto"), caption=f"Minuta referente à NF-e: {item['nf']}")
-
-        # Baixar a imagem para o botão de download (DENTRO DO FOR)
-        url_da_foto = item.get("foto_url") or item.get("url_foto")
-        if url_da_foto:
-            try:
-                res_img = requests.get(url_da_foto, timeout=5)
-                if res_img.status_code == 200:
-                    st.download_button(
-                        label="Baixar Minuta",
-                        data=res_img.content,
-                        file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
-                        mime="image/png",
-                        key=f"down_{item['id']}"
-                    )
-            except Exception:
-                st.warning("Não foi possível carregar a imagem para download.")
-                    # Botão de Deletar no Supabase
-                    if st.button("Deletar Minuta", key=f"del_{item['id']}"):
-                        supabase.table("minutas").delete().eq("id", item["id"]).execute()
-                        st.success("Minuta apagada com sucesso!")
-                        del st.session_state["minutas_encontradas"]
-                        st.rerun()
-            else:
-                st.warning("Nenhuma minuta encontrada para esta NF-e ;-;")
         else:
             st.error("Digite o número da NF-e.")
+
+    if "minutas_encontradas" in st.session_state and st.session_state["minutas_encontradas"]:
+        minutas = st.session_state["minutas_encontradas"]
+        
+        for item in minutas:
+            url_foto = item.get("foto_url") or item.get("url_foto")
+            st.image(url_foto, caption=f"Minuta referente à NF-e: {item['nf']}")
+
+            # Baixar a imagem para o botão de download
+            if url_foto:
+                try:
+                    res_img = requests.get(url_foto, timeout=5)
+                    if res_img.status_code == 200:
+                        st.download_button(
+                            label="Baixar Minuta",
+                            data=res_img.content,
+                            file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
+                            mime="image/png",
+                            key=f"down_{item['id']}"
+                        )
+                except Exception:
+                    st.warning("Não foi possível carregar a imagem para download.")
+
+            # Botão de Deletar no Supabase
+            if st.button("Deletar Minuta", key=f"del_{item['id']}"):
+                supabase.table("minutas").delete().eq("id", item["id"]).execute()
+                st.success("Minuta apagada com sucesso!")
+                del st.session_state["minutas_encontradas"]
+                st.rerun()
+
+    elif "minutas_encontradas" in st.session_state and not st.session_state["minutas_encontradas"]:
+        st.warning("Nenhuma minuta encontrada para esta NF-e ;-;")
 
 # --- CONSULTAR POR CARREGAMENTO ---
 elif opcao == "Consultar por Carregamento":
     st.title("Consultar por Carregamento")
     num_carregamento = st.text_input("Digite o número do Carregamento:")
+    
     if st.button("Buscar Carregamento"): 
         if num_carregamento:
             with st.spinner("Buscando..."):
@@ -74,27 +80,27 @@ elif opcao == "Consultar por Carregamento":
                 minutas = resposta.data
 
             if minutas:
-                st.subheader(f"Minutas econtradas no Carregamento {num_carregamento}:")
+                st.subheader(f"Minutas encontradas no Carregamento {num_carregamento}:")
                 for item in minutas:
-                    st.image(item["url_foto"], caption=f"NF-e: {item['nf']} | Carregamento: {item['carregamento']}")
+                    url_foto = item.get("foto_url") or item.get("url_foto")
+                    st.image(url_foto, caption=f"NF-e: {item['nf']} | Carregamento: {item['carregamento']}")
             else:
                 st.warning("Nenhuma minuta encontrada para este carregamento ._.")
         else:
             st.error("Digite o número do carregamento.")
+
 # --- CADASTRAR MINUTAS ---
 elif opcao == "Cadastrar Minutas":
     st.title("Cadastro de Novas Minutas")
 
-    # 1. Criamos um Formulário com a regra de limpar os campos após o envio
+    # Formulário com limpeza automática ao enviar
     with st.form(key="form_minuta", clear_on_submit=True):
         carregamento = st.text_input("Digite o número do Carregamento:")
         nf_cadastro = st.text_input("Digite o número da Nf-e:")
         foto = st.file_uploader("Selecione a foto da minuta assinada:", type=["png", "jpg", "jpeg"])
         
-        # Botão oficial de envio do formulário
         botao_salvar = st.form_submit_button("Salvar Minuta")
 
-    # 2. Quando o botão for acionado:
     if botao_salvar:
         if carregamento and nf_cadastro and foto:
             nf_limpa = str(nf_cadastro).strip()
