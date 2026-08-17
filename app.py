@@ -37,15 +37,22 @@ if opcao == "Consultar por NF-e":
                 for item in minutas:
                     st.image(item["url_foto"], caption=f"Minuta referente à NF-e: {nf}")
                     
-                    # Baixar a imagem da internet para permitir download
-                    img_bytes = requests.get(item["url_foto"]).content
+                   # Baixar a imagem para o botão de download
+        url_da_foto = item.get("foto_url") or item.get("url_foto")
+        
+        if url_da_foto:
+            try:
+                res_img = requests.get(url_da_foto, timeout=5)
+                if res_img.status_code == 200:
                     st.download_button(
                         label="Baixar Minuta",
-                        data=img_bytes,
-                        file_name=f"C{item['carregamento']}_NF{item['nf']}.png",
+                        data=res_img.content,
+                        file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
                         mime="image/png",
                         key=f"down_{item['id']}"
                     )
+            except Exception:
+                st.warning("Não foi possível carregar a imagem para download.")
 
                     # Botão de Deletar no Supabase
                     if st.button("Deletar Minuta", key=f"del_{item['id']}"):
