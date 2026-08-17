@@ -18,6 +18,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 if os.path.exists("logo.png"):
     col1, col2, col3 = st.sidebar.columns([1, 2, 1])
     with col2:
@@ -128,7 +129,7 @@ elif opcao == "Cadastrar Minutas":
                     }
                     files = {"image": foto.getvalue()}
                     res = requests.post("https://api.imgbb.com/1/upload", data=payload, files=files)
-
+                    
                     if res.status_code == 200:
                         dados_resposta = res.json()["data"]
                         url_foto = dados_resposta.get("display_url", dados_resposta.get("url"))
@@ -138,6 +139,7 @@ elif opcao == "Cadastrar Minutas":
                             "nf": nf_limpa,
                             "url_foto": url_foto
                         }
+
                         try:
                             supabase.table("minutas").insert(dados).execute()
                             st.success("✅ Minuta cadastrada com sucesso!")
@@ -145,5 +147,5 @@ elif opcao == "Cadastrar Minutas":
                             st.error(f"Erro do Supabase: {e}")
                     else:
                         st.error("Erro ao enviar a imagem. Tente novamente.")
-           else:
-              st.warning("⚠️ Preencha todos os campos e selecione uma foto antes de salvar.")
+        else:
+            st.warning("⚠️ Preencha todos os campos e selecione uma foto antes de salvar.")
