@@ -45,6 +45,7 @@ if opcao == "Consultar por NF-e":
 
             # Baixar a imagem para o botão de download
             if url_foto:
+                st.markdown(f"🔍[**Abrir imagem em tamanho real (com zoom)**]({url_foto})")
                 try:
                     res_img = requests.get(url_foto, timeout=5)
                     if res_img.status_code == 200:
