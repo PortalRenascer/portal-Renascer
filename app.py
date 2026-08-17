@@ -30,9 +30,10 @@ if opcao == "Consultar por NF-e":
         if nf: 
             with st.spinner("Buscando..."):
                 resposta = supabase.table("minutas").select("*").eq("nf", str(nf).strip()).execute()
-                minutas = resposta.data
+                st.session_state["minutas_encontradas"] = resposta.data
 
-            if minutas:
+    if "minutas_encontradas" in st.session_state and st.session_state["minutas_encontradas"]:
+        minutas = st.session_state["minutas_encontradas"]
                 for item in minutas:
                     st.image(item["url_foto"], caption=f"Minuta referente à NF-e: {nf}")
                     
@@ -50,6 +51,7 @@ if opcao == "Consultar por NF-e":
                     if st.button("Deletar Minuta", key=f"del_{item['id']}"):
                         supabase.table("minutas").delete().eq("id", item["id"]).execute()
                         st.success("Minuta apagada com sucesso!")
+                        del st.session_state["minutas_encontradas"]
                         st.rerun()
             else:
                 st.warning("Nenhuma minuta encontrada para esta NF-e ;-;")
