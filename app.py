@@ -8,7 +8,16 @@ st.set_page_config(
     page_icon="logo.png",
     layout="wide"
 )
-
+st.markdown("""
+    <style>
+    @media (max-width: 768px) {
+        [data-testid="stSidebar"] img {
+            max-width: 100px !important;
+            margin: 0 auto;
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
 if os.path.exists("logo.png"):
     col1, col2, col3 = st.sidebar.columns([1, 2, 1])
     with col2:
