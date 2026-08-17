@@ -136,7 +136,7 @@ elif opcao == "Cadastrar Minutas":
                         dados = {
                             "carregamento": str(carregamento).strip(),
                             "nf": nf_limpa,
-                            "foto_url": url_foto
+                            "url_foto": url_foto
                         }
                         supabase.table("minutas").insert(dados).execute()
                         st.success("✅ Minuta cadastrada com sucesso! Os campos foram limpos para o próximo cadastro.")
