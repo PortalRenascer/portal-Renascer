@@ -34,23 +34,22 @@ if opcao == "Consultar por NF-e":
 
     if "minutas_encontradas" in st.session_state and st.session_state["minutas_encontradas"]:
         minutas = st.session_state["minutas_encontradas"]
-                for item in minutas:
-                    st.image(item["url_foto"], caption=f"Minuta referente à NF-e: {nf}")
+        for item in minutas:
+            st.image(item["url_foto"], caption=f"Minuta referente à NF-e: {nf}")
                     
                    # Baixar a imagem para o botão de download
-        url_da_foto = item.get("foto_url") or item.get("url_foto")
-        
-        if url_da_foto:
-            try:
-                res_img = requests.get(url_da_foto, timeout=5)
-                if res_img.status_code == 200:
-                    st.download_button(
-                        label="Baixar Minuta",
-                        data=res_img.content,
-                        file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
-                        mime="image/png",
-                        key=f"down_{item['id']}"
-                    )
+            url_da_foto = item.get("foto_url") or item.get("url_foto")  
+            if url_da_foto:
+              try:
+                 res_img = requests.get(url_da_foto, timeout=5)
+                 if res_img.status_code == 200:
+                     st.download_button(
+                         label="Baixar Minuta",
+                         data=res_img.content,
+                         file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
+                         mime="image/png",
+                         key=f"down_{item['id']}"
+                     )
             except Exception:
                 st.warning("Não foi possível carregar a imagem para download.")
 
