@@ -51,11 +51,32 @@ if opcao == "Consultar por NF-e":
         
         for item in minutas:
             url_foto = item.get("foto_url") or item.get("url_foto")
-            st.image(url_foto, caption=f"Minuta referente à NF-e: {item['nf']}")
+            minuta_id = item["id"]
 
-            # Baixar a imagem para o botão de download
+            # Inicializa a rotação no estado do Streamlit para cada imagem
+            key_rotacao = f"rot_{minuta_id}"
+            if key_rotacao not in st.session_state:
+                st.session_state[key_rotacao] = 0
+
+            # Botão para girar a imagem
+            if st.button("🔄 Girar Imagem 90°", key=f"btn_rot_{minuta_id}"):
+                st.session_state[key_rotacao] = (st.session_state[key_rotacao] + 90) % 360
+
+            # Exibe a imagem com a rotação aplicada via CSS
+            angulo = st.session_state[key_rotacao]
+            st.markdown(
+                f'''
+                <div style="display: flex; justify-content: center; align-items: center; padding: 20px 0;">
+                    <img src="{url_foto}" style="transform: rotate({angulo}deg); max-width: 100%; height: auto; transition: transform 0.3s ease;">
+                </div>
+                ''',
+                unsafe_allow_html=True
+            )
+            st.caption(f"Minuta referente à NF-e: {item['nf']}")
+
+            # Link e download
             if url_foto:
-                st.markdown(f"🔍[**Abrir imagem em tamanho real (com zoom)**]({url_foto})")
+                st.markdown(f"🔍 [**Abrir imagem em tamanho real (com zoom)**]({url_foto})")
                 try:
                     res_img = requests.get(url_foto, timeout=5)
                     if res_img.status_code == 200:
@@ -64,14 +85,14 @@ if opcao == "Consultar por NF-e":
                             data=res_img.content,
                             file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
                             mime="image/png",
-                            key=f"down_{item['id']}"
+                            key=f"down_{minuta_id}"
                         )
                 except Exception:
                     st.warning("Não foi possível carregar a imagem para download.")
 
-            # Botão de Deletar no Supabase
-            if st.button("Deletar Minuta", key=f"del_{item['id']}"):
-                supabase.table("minutas").delete().eq("id", item["id"]).execute()
+            # Botão de Deletar
+            if st.button("Deletar Minuta", key=f"del_{minuta_id}"):
+                supabase.table("minutas").delete().eq("id", minuta_id).execute()
                 st.success("Minuta apagada com sucesso!")
                 del st.session_state["minutas_encontradas"]
                 st.rerun()
