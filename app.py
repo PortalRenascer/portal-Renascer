@@ -127,7 +127,7 @@ if opcao == "Consultar por NF-e":
             st.components.v1.html(html_visualizador, height=500, scrolling=False)
 
     elif "minutas_encontradas" in st.session_state and not st.session_state["minutas_encontradas"]:
-        st.warning("Nenhuma minuta encontrada para esta NF-e ;-;")
+        st.warning("Nenhuma minuta encontrada para esta NF-e")
 
 # --- CONSULTAR POR CARREGAMENTO ---
 elif opcao == "Consultar por Carregamento":
@@ -224,7 +224,7 @@ elif opcao == "Consultar por Carregamento":
             st.components.v1.html(html_visualizador, height=500, scrolling=False)
 
     elif "carr_encontrados" in st.session_state and not st.session_state["carr_encontrados"]:
-        st.warning("Nenhuma minuta encontrada para este carregamento ._.")
+        st.warning("Nenhuma minuta encontrada para este carregamento.")
 
 # --- CADASTRAR MINUTAS ---
 elif opcao == "Cadastrar Minutas":
