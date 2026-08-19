@@ -53,35 +53,65 @@ if opcao == "Consultar por NF-e":
             url_foto = item.get("foto_url") or item.get("url_foto")
             minuta_id = item["id"]
 
-            # Inicializa a rotação no estado do Streamlit para cada imagem
-            key_rotacao = f"rot_{minuta_id}"
-            if key_rotacao not in st.session_state:
-                st.session_state[key_rotacao] = 0
-
-            # Botão para girar a imagem
-            if st.button("🔄 Girar Imagem 90°", key=f"btn_rot_{minuta_id}"):
-                st.session_state[key_rotacao] = (st.session_state[key_rotacao] + 90) % 360
-
-            # Exibe a imagem com a rotação aplicada via CSS
-            angulo = st.session_state[key_rotacao]
-            st.markdown(
-                f'''
-                <div style="display: flex; justify-content: center; align-items: center; padding: 20px 0;">
-                    <img src="{url_foto}" style="transform: rotate({angulo}deg); max-width: 100%; height: auto; transition: transform 0.3s ease;">
-                </div>
-                ''',
-                unsafe_allow_html=True
-            )
             st.caption(f"Minuta referente à NF-e: {item['nf']}")
+            
+            # Componente interativo de visualização com Zoom e Rotação
+            html_visualizador = f"""
+            <div style="border: 1px solid #444; padding: 10px; border-radius: 8px; background: #1e1e1e; text-align: center;">
+                <div style="margin-bottom: 10px;">
+                    <button onclick="girar_{minuta_id}()" style="padding: 6px 12px; margin-right: 5px; cursor: pointer;">🔄 Girar 90°</button>
+                    <button onclick="zoomIn_{minuta_id}()" style="padding: 6px 12px; margin-right: 5px; cursor: pointer;">🔍 + Zoom</button>
+                    <button onclick="zoomOut_{minuta_id}()" style="padding: 6px 12px; margin-right: 5px; cursor: pointer;">🔍 - Zoom</button>
+                    <button onclick="reset_{minuta_id}()" style="padding: 6px 12px; cursor: pointer;">↩️ Resetar</button>
+                </div>
+                <div style="overflow: auto; max-height: 700px; display: flex; justify-content: center; align-items: center; background: #0e0e0e; border-radius: 5px;">
+                    <img id="img_{minuta_id}" src="{url_foto}" style="max-width: 100%; transition: transform 0.2s ease; transform-origin: center center;">
+                </div>
+            </div>
 
-            # Link e download
+            <script>
+                let angulo_{minuta_id} = 0;
+                let escala_{minuta_id} = 1;
+
+                function atualizar_{minuta_id}() {{
+                    let img = document.getElementById('img_{minuta_id}');
+                    img.style.transform = 'rotate(' + angulo_{minuta_id} + 'deg) scale(' + escala_{minuta_id} + ')';
+                }}
+
+                function girar_{minuta_id}() {{
+                    angulo_{minuta_id} = (angulo_{minuta_id} + 90) % 360;
+                    atualizar_{minuta_id}();
+                }}
+
+                function zoomIn_{minuta_id}() {{
+                    escala_{minuta_id} += 0.25;
+                    atualizar_{minuta_id}();
+                }}
+
+                function zoomOut_{minuta_id}() {{
+                    if (escala_{minuta_id} > 0.5) {{
+                        escala_{minuta_id} -= 0.25;
+                        atualizar_{minuta_id}();
+                    }}
+                }}
+
+                function reset_{minuta_id}() {{
+                    angulo_{minuta_id} = 0;
+                    escala_{minuta_id} = 1;
+                    atualizar_{minuta_id}();
+                }}
+            </script>
+            """
+            
+            st.components.v1.html(html_visualizador, height=750, scrolling=True)
+
+            # Botão para baixar a imagem
             if url_foto:
-                st.markdown(f"🔍 [**Abrir imagem em tamanho real (com zoom)**]({url_foto})")
                 try:
                     res_img = requests.get(url_foto, timeout=5)
                     if res_img.status_code == 200:
                         st.download_button(
-                            label="Baixar Minuta",
+                            label="Baixar Minuta Original",
                             data=res_img.content,
                             file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
                             mime="image/png",
@@ -96,30 +126,6 @@ if opcao == "Consultar por NF-e":
                 st.success("Minuta apagada com sucesso!")
                 del st.session_state["minutas_encontradas"]
                 st.rerun()
-
-    elif "minutas_encontradas" in st.session_state and not st.session_state["minutas_encontradas"]:
-        st.warning("Nenhuma minuta encontrada para esta NF-e!")
-
-# --- CONSULTAR POR CARREGAMENTO ---
-elif opcao == "Consultar por Carregamento":
-    st.title("Consultar por Carregamento")
-    num_carregamento = st.text_input("Digite o número do Carregamento:")
-    
-    if st.button("Buscar Carregamento"): 
-        if num_carregamento:
-            with st.spinner("Buscando..."):
-                resposta = supabase.table("minutas").select("*").eq("carregamento", str(num_carregamento).strip()).execute()
-                minutas = resposta.data
-
-            if minutas:
-                st.subheader(f"Minutas encontradas no Carregamento {num_carregamento}:")
-                for item in minutas:
-                    url_foto = item.get("foto_url") or item.get("url_foto")
-                    st.image(url_foto, caption=f"NF-e: {item['nf']} | Carregamento: {item['carregamento']}")
-            else:
-                st.warning("Nenhuma minuta encontrada para este carregamento!")
-        else:
-            st.error("Digite o número do carregamento.")
 
 # --- CADASTRAR MINUTAS ---
 elif opcao == "Cadastrar Minutas":
