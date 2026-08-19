@@ -55,7 +55,31 @@ if opcao == "Consultar por NF-e":
 
             st.caption(f"Minuta referente à NF-e: {item['nf']}")
             
-            # Componente interativo de visualização com Zoom e Rotação
+            # Coloca os botões de Baixar e Deletar no topo em colunas
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if url_foto:
+                    try:
+                        res_img = requests.get(url_foto, timeout=5)
+                        if res_img.status_code == 200:
+                            st.download_button(
+                                label="📥 Baixar Minuta Original",
+                                data=res_img.content,
+                                file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
+                                mime="image/png",
+                                key=f"down_{minuta_id}"
+                            )
+                    except Exception:
+                        st.warning("Não foi possível carregar a imagem para download.")
+            
+            with col2:
+                if st.button("🗑️ Deletar Minuta", key=f"del_{minuta_id}"):
+                    supabase.table("minutas").delete().eq("id", minuta_id).execute()
+                    st.success("Minuta apagada com sucesso!")
+                    del st.session_state["minutas_encontradas"]
+                    st.rerun()
+
+            # Visualizador com altura reduzida (height=500)
             html_visualizador = f"""
             <div style="border: 1px solid #444; padding: 10px; border-radius: 8px; background: #1e1e1e; text-align: center;">
                 <div style="margin-bottom: 10px;">
@@ -64,7 +88,7 @@ if opcao == "Consultar por NF-e":
                     <button onclick="zoomOut_{minuta_id}()" style="padding: 6px 12px; margin-right: 5px; cursor: pointer;">🔍 - Zoom</button>
                     <button onclick="reset_{minuta_id}()" style="padding: 6px 12px; cursor: pointer;">↩️ Resetar</button>
                 </div>
-                <div style="overflow: auto; max-height: 700px; display: flex; justify-content: center; align-items: center; background: #0e0e0e; border-radius: 5px;">
+                <div style="overflow: auto; max-height: 400px; display: flex; justify-content: center; align-items: center; background: #0e0e0e; border-radius: 5px;">
                     <img id="img_{minuta_id}" src="{url_foto}" style="max-width: 100%; transition: transform 0.2s ease; transform-origin: center center;">
                 </div>
             </div>
@@ -103,30 +127,7 @@ if opcao == "Consultar por NF-e":
             </script>
             """
             
-            st.components.v1.html(html_visualizador, height=750, scrolling=True)
-
-            # Botão para baixar a imagem
-            if url_foto:
-                try:
-                    res_img = requests.get(url_foto, timeout=5)
-                    if res_img.status_code == 200:
-                        st.download_button(
-                            label="Baixar Minuta Original",
-                            data=res_img.content,
-                            file_name=f"C{item.get('carregamento', '')}_NF{item['nf']}.png",
-                            mime="image/png",
-                            key=f"down_{minuta_id}"
-                        )
-                except Exception:
-                    st.warning("Não foi possível carregar a imagem para download.")
-
-            # Botão de Deletar
-            if st.button("Deletar Minuta", key=f"del_{minuta_id}"):
-                supabase.table("minutas").delete().eq("id", minuta_id).execute()
-                st.success("Minuta apagada com sucesso!")
-                del st.session_state["minutas_encontradas"]
-                st.rerun()
-
+            st.components.v1.html(html_visualizador, height=500, scrolling=False)
 # --- CADASTRAR MINUTAS ---
 elif opcao == "Cadastrar Minutas":
     st.title("Cadastro de Novas Minutas")
